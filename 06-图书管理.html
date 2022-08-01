@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./lib/bootstrap.css">
+    <script src="./lib/jquery.js"></script>
+    <title>Document</title>
+</head>
+<body style="padding:20px">
+    <!-- 添加图书panel面板 -->
+    
+    <div class="panel panel-primary">
+          <div class="panel-heading">
+                <h3 class="panel-title">添加新图书</h3>
+          </div>
+          <div class="panel-body form-inline">
+               
+               <div class="input-group">
+                <div class="input-group-addon">书名</div>
+                <input type="text" class="form-control" id="iptBookname" placeholder="请输入书名">
+               </div>
+
+               <div class="input-group">
+                <div class="input-group-addon">作者</div>
+                <input type="text" class="form-control" id="iptAuthor" placeholder="请输入作者">
+               </div>
+
+               <div class="input-group">
+                <div class="input-group-addon">出版社</div>
+                <input type="text" class="form-control" id="iptPublisher" placeholder="请输入出版社">
+               </div>
+               
+               <button type="button" id="btnAdd" class="btn btn-primary">提交</button>
+               
+          </div>
+    </div>
+    
+    <!-- 图书表格 -->
+    
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>书名</th>
+                <th>作者</th>
+                <th>出版社</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <!-- <tr>
+                <td></td>
+            </tr> -->
+        </tbody>
+    </table>
+    
+    <script>
+        $(function () {
+            let tbody = document.querySelector('tbody')
+            // 获取数据并把数据渲染到表格
+            function getData(){
+                
+                $.get('http://www.liulongbin.top:3006/api/getbooks',function(res){
+                    // console.log(res.status);
+                    if(res.status !== 200){
+                        alert('获取数据失败')
+                        return 
+                    }
+                    tbody.innerHTML = ''
+                    // 填充数据
+                    for(let i=0;i<res.data.length;i++){
+                    let tr = document.createElement('tr')
+                    tr.innerHTML = `
+                    <td>${res.data[i].id}</td>
+                    <td>${res.data[i].bookname}</td>
+                    <td>${res.data[i].author}</td>
+                    <td> ${res.data[i].publisher}</td>
+                    <td><a href="#" class="del" data-id="${res.data[i].id}">删除</a></td>
+                    `
+                        tbody.append(tr)
+                    }
+                    // console.log(res.data);
+                })
+            }
+            getData()
+
+            // 事件委托方式获取 删除按钮的事件监听
+            tbody.addEventListener('click',function(e){
+                // if(e.target.innerHTML === '删除')
+                if(e.target.tagName === 'A'){
+                    // 第一种方式获取选中当前行的 id编号
+                    let id = e.target.dataset.id
+                    // alert(id)
+
+                    // 第2种方式获取选中当前行的 id编号
+                    // let id2 = e.target.getAttribute('data-id')
+                    // console.log(id2);
+                    $.get('http://www.liulongbin.top:3006/api/delbook',{id:id},function(res){
+                        // console.log(res.status);
+                        if(res.status === 200){
+                            getData()
+                            // alert('删除该图书成功')
+                        }else{
+                            alert('删除该图书失败')
+                        }
+                    })
+                }
+            })
+
+            //添加按钮事件监听 
+            let btn = document.querySelector('#btnAdd')
+            let iptBookname = document.querySelector('#iptBookname')
+            let iptAuthor = document.querySelector('#iptAuthor')
+            let iptPublisher = document.querySelector('#iptPublisher')
+
+            btn.addEventListener('click',function(){
+
+                    if(iptBookname.value.trim().length <=0 ||iptAuthor.value.trim().length <=0  ||iptPublisher.value.trim().length <=0 ){
+                        alert('输入不能为空')
+                    }else{
+                        console.log(iptBookname.value);
+                            $.post(
+                            'http://www.liulongbin.top:3006/api/addbook',
+                            {bookname:iptBookname.value.trim().toString(),
+                            author:iptAuthor.value.trim().toString(),
+                            publisher:iptPublisher.value.trim().toString()
+                            },
+                            function(res){
+                                console.log(res);
+                            if(res.status === 201){
+                                getData()
+                                alert('添加图书成功')
+                            }else if(res.status === 502){
+                                alert('图书的名字只能是中英文，且最大长度为 7 个字符！！！')
+                            }
+                            })
+                            iptBookname.value = ''
+                            iptAuthor.value = ''
+                            iptPublisher.value = ''
+                    }
+            })
+
+
+        })
+
+
+    </script>
+    
+</body>
+</html>
