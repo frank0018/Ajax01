@@ -73,7 +73,7 @@ $(function(){
             url:'http://ajax.frontend.itheima.net:3006/api/synthesize',
             text:text,
             success: function(res){
-                if(res.status === 2000){
+                if(res.status === 200){
                     let audio = document.querySelector('audio')
                     audio.style.src = res.voiceUrl
                 }
